@@ -1,0 +1,83 @@
+#include <Wire.h>
+#include <Adafruit_LiquidCrystal.h>
+
+#define SLAVE_ADDRESS 8
+
+Adafruit_LiquidCrystal lcd(0);
+
+int gas, tempADC, light;
+float voltage, temperature;
+
+void setup()
+{
+  Serial.begin(9600);
+  Wire.begin();
+
+  lcd.begin(16, 2);
+  lcd.setBacklight(1);
+
+  lcd.setCursor(0, 0);
+  lcd.print("INDUSTRIAL SCADA");
+
+  lcd.setCursor(0, 1);
+  lcd.print("System Starting");
+
+  delay(2000);
+  lcd.clear();
+}
+
+void loop()
+{
+  Wire.requestFrom(SLAVE_ADDRESS, 6);
+
+  if (Wire.available() >= 6)
+  {
+    gas = Wire.read() << 8;
+    gas |= Wire.read();
+
+    tempADC = Wire.read() << 8;
+    tempADC |= Wire.read();
+
+    light = Wire.read() << 8;
+    light |= Wire.read();
+
+    voltage = tempADC * (5.0 / 1023.0);
+    temperature = (voltage - 0.5) * 100.0;
+
+    lcd.setCursor(0, 0);
+    lcd.print("G:");
+    lcd.print(gas);
+    lcd.print(" T:");
+    lcd.print(temperature, 1);
+    lcd.print("C ");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Light:");
+    lcd.print(light);
+    lcd.print("       ");
+
+    Serial.print("Gas Value: ");
+    Serial.println(gas);
+
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.println(" C");
+
+    Serial.print("Light Value: ");
+    Serial.println(light);
+
+    Serial.println("------------------");
+  }
+  else
+  {
+    lcd.setCursor(0, 0);
+    lcd.print("I2C Error       ");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Check Node A    ");
+
+    Serial.println("I2C Communication Error");
+  }
+
+  delay(1000);
+}
