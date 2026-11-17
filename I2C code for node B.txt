@@ -1,0 +1,38 @@
+
+#include <Wire.h>
+
+void setup()
+{
+  Serial.begin(9600);
+  Wire.begin();
+}
+
+void loop()
+{
+  Wire.requestFrom(8, 6);
+
+  if (Wire.available() >= 6)
+  {
+    int gas = Wire.read() << 8;
+    gas |= Wire.read();
+
+    int temp = Wire.read() << 8;
+    temp |= Wire.read();
+
+    int light = Wire.read() << 8;
+    light |= Wire.read();
+
+    Serial.print("Gas Value: ");
+    Serial.println(gas);
+
+    Serial.print("Temperature ADC: ");
+    Serial.println(temp);
+
+    Serial.print("Light Value: ");
+    Serial.println(light);
+
+    Serial.println("----------------");
+  }
+
+  delay(1000);
+}
